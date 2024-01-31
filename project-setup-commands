@@ -1,0 +1,112 @@
+------1)) SETUP DOCKERFILE-------
+
+To make building of images more efficient - One RUN command
+In that case we do not create so many layers on our system
+
+0. By default we use argument DEV = false.
+We override it by 'true' in Dockerfile to copy requirements.dev.txt
+And install and run linting
+
+ARG DEV=false
+
+1) Create virtual env to store our dependencies
+RUN python -m venv /py && \
+
+2 Upgrade pyp package manager inside of our virtual environment
+    /py/bin/pip install --upgrade pip && \
+3 Install our requirements inside docker image
+    /py/bin/pip install -r /tmp/requirements.txt && \
+3.1 Chec DEV variable and install dependencies for development env
+    if [ $DEV = "true" ]; \
+        then /py/bin/pip install -r requirements.dev.txt ; \
+    fi && \
+4 remove tmp folder with any extra dependencies to keep image light
+    rm -rf /tmp && \
+5 add new user inside of docker image. 
+5.1 Do not use root user to restrict access
+    adduser \
+5.2 disable access by password
+        --disabled-password \
+5.3 Do not create home folder to keep docker image as lightweigh as possible
+        --no-create-home \
+5.4 Specify username
+        django-user
+6 Update PATH environment variable inside of image
+ENV PATH="/py/bin:$PATH"
+
+7 SWITCH USER TO OUR USER  so all next commands inside of docker container will run by our user
+USER django-user
+
+
+
+FROM python:3.9-alpine3.13
+LABEL maintainer="rspot77"
+
+ENV PYTHONUNBUFFERED 1
+
+COPY ./requirements.txt /tmp/requirements.txt
+COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+COPY ./app /app
+WORKDIR /app
+EXPOSE 8000
+
+ARG DEV=false
+RUN python -m venv /py && \
+    /py/bin/pip install --upgrade pip && \
+    /py/bin/pip install -r /tmp/requirements.txt && \
+    if [ $DEV = "true" ]; \
+        then /py/bin/pip install -r requirements.dev.txt ; \
+    fi && \
+    rm -rf /tmp && \
+    adduser \
+        --disabled-password \
+        --no-create-home \
+        django-user
+
+ENV PATH="/py/bin:$PATH"
+
+USER django-user
+
+------- BUILD DOCKER IMAGE ---------
+create app folder in project
+docker build .
+
+
+-------- Create docker-compose.yml file -------
+
+Version of docker-compose syntax
+version: '3.9'
+
+services:
+1. Name of our service
+  app: 
+2. Specify that we would like to build our docker file inside of our current directory because of context: "."
+    build:
+      context: .
+3. Specify port mapping. 8000 on our local machine to port 8000 inside of docker container
+    ports:
+      - "8000:8000"
+4. Volumes are the way of mapping directories from our system to a docker container 
+That we do for bring changes of our code to a running container without rebuilding that
+    volumes:
+      - ./app:/app
+5. Command that used to run our service
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8000"
+
+----------- Build  ---------
+docker-compose build 
+
+
+
+------------ LINTING -------------
+Create new file ".flake8" in "app" folder
+
+docker-compose run --rm app sh -c "flake8"
+
+
+
+----------- CREATE AND RUN DJANGO PROJECT -----------
+docker-compose run --rm app sh -c "django-admin startproject app ."
+
+docker-compose up
