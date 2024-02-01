@@ -14,6 +14,13 @@ RUN python -m venv /py && \
 
 2 Upgrade pyp package manager inside of our virtual environment
     /py/bin/pip install --upgrade pip && \
+2.1 install postgresql client inside our alpine3 image
+That will allow Psycopg2 package to connect to postgres
+    apk add --update --no-cache postgresql-client && \
+2.2 Creates a virtual dependencies group to delete after setup
+    apk add --update --no-cache --virtual .tmp-build-deps
+        build-base postgresql-dev musl-dev && \
+
 3 Install our requirements inside docker image
     /py/bin/pip install -r /tmp/requirements.txt && \
 3.1 Chec DEV variable and install dependencies for development env
@@ -22,6 +29,8 @@ RUN python -m venv /py && \
     fi && \
 4 remove tmp folder with any extra dependencies to keep image light
     rm -rf /tmp && \
+4.1 remove temporary dependecies (required for postgres setup)
+    apk del .tmp-build-deps &&  \
 5 add new user inside of docker image. 
 5.1 Do not use root user to restrict access
     adduser \
@@ -37,35 +46,6 @@ ENV PATH="/py/bin:$PATH"
 7 SWITCH USER TO OUR USER  so all next commands inside of docker container will run by our user
 USER django-user
 
-
-
-FROM python:3.9-alpine3.13
-LABEL maintainer="rspot77"
-
-ENV PYTHONUNBUFFERED 1
-
-COPY ./requirements.txt /tmp/requirements.txt
-COPY ./requirements.dev.txt /tmp/requirements.dev.txt
-COPY ./app /app
-WORKDIR /app
-EXPOSE 8000
-
-ARG DEV=false
-RUN python -m venv /py && \
-    /py/bin/pip install --upgrade pip && \
-    /py/bin/pip install -r /tmp/requirements.txt && \
-    if [ $DEV = "true" ]; \
-        then /py/bin/pip install -r requirements.dev.txt ; \
-    fi && \
-    rm -rf /tmp && \
-    adduser \
-        --disabled-password \
-        --no-create-home \
-        django-user
-
-ENV PATH="/py/bin:$PATH"
-
-USER django-user
 
 ------- BUILD DOCKER IMAGE ---------
 create app folder in project
@@ -110,3 +90,50 @@ docker-compose run --rm app sh -c "flake8"
 docker-compose run --rm app sh -c "django-admin startproject app ."
 
 docker-compose up
+
+http://127.0.0.1:8000/
+
+
+
+----------- CONFIGURE GITHUB ACTIONS -------------
+Create config file 
+.github/workflows/checks.yml
+
+set trigger
+add steps running testing and linting
+
+Configure DockerHub auth
+
+
+------- WRITE TESTS FOLLOWING TDD -----------
+SimpleTestCase
+TestCase 
+
+docker-compose run --rm app sh -c "python manage.py test"
+
+
+---------- CONFIGURING DATABASE -----------
+
+
+Update seetings.py with db setup
+
+DB Adapter package Psycopg2 to let django connect to db 
+Psycopg2-binary 
+- Ok for dev
+- NOT OK for production
+- It is a pre-packaged binary. Not optimized for prod environment os
+
+Psycopg2 
+- Compiled from source for required environment.
+- Requires additional dependencies to be Compiled
+- Easy to install with Docker
+
+Installing Psycopg2:
+- C compiller
+- python3-dev
+- libpq-dev 
+Equivalent packages for alpine3
+- postgresql-client
+- build-base 
+- postgresql-dev
+- musl-dev
