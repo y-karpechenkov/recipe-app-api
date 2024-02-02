@@ -114,9 +114,6 @@ docker-compose run --rm app sh -c "python manage.py test"
 
 ---------- CONFIGURING DATABASE -----------
 
-
-Update seetings.py with db setup
-
 DB Adapter package Psycopg2 to let django connect to db 
 Psycopg2-binary 
 - Ok for dev
@@ -137,3 +134,25 @@ Equivalent packages for alpine3
 - build-base 
 - postgresql-dev
 - musl-dev
+
+
+Update seetings.py with db setup.
+Following environ variables are set in docker-compose.yml in section app.environment:
+# Database
+# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': os.environ.get('DB_HOST'),
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASS'),
+    }
+}
+
+
+
+----------- CREATE CORE APP -------------
+
+----------- FIXING DB RACE CONDITION -----------
