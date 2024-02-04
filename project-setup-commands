@@ -31,7 +31,7 @@ That will allow Psycopg2 package to connect to postgres
     rm -rf /tmp && \
 4.1 remove temporary dependecies (required for postgres setup)
     apk del .tmp-build-deps &&  \
-5 add new user inside of docker image. 
+5 add new user inside of docker image.
 5.1 Do not use root user to restrict access
     adduser \
 5.2 disable access by password
@@ -59,14 +59,14 @@ version: '3.9'
 
 services:
 1. Name of our service
-  app: 
+  app:
 2. Specify that we would like to build our docker file inside of our current directory because of context: "."
     build:
       context: .
 3. Specify port mapping. 8000 on our local machine to port 8000 inside of docker container
     ports:
       - "8000:8000"
-4. Volumes are the way of mapping directories from our system to a docker container 
+4. Volumes are the way of mapping directories from our system to a docker container
 That we do for bring changes of our code to a running container without rebuilding that
     volumes:
       - ./app:/app
@@ -75,7 +75,7 @@ That we do for bring changes of our code to a running container without rebuildi
       sh -c "python manage.py runserver 0.0.0.0:8000"
 
 ----------- Build  ---------
-docker-compose build 
+docker-compose build
 
 
 
@@ -96,7 +96,7 @@ http://127.0.0.1:8000/
 
 
 ----------- CONFIGURE GITHUB ACTIONS -------------
-Create config file 
+Create config file
 .github/workflows/checks.yml
 
 set trigger
@@ -107,20 +107,20 @@ Configure DockerHub auth
 
 ------- WRITE TESTS FOLLOWING TDD -----------
 SimpleTestCase
-TestCase 
+TestCase
 
 docker-compose run --rm app sh -c "python manage.py test"
 
 
 ---------- CONFIGURING DATABASE -----------
 
-DB Adapter package Psycopg2 to let django connect to db 
-Psycopg2-binary 
+DB Adapter package Psycopg2 to let django connect to db
+Psycopg2-binary
 - Ok for dev
 - NOT OK for production
 - It is a pre-packaged binary. Not optimized for prod environment os
 
-Psycopg2 
+Psycopg2
 - Compiled from source for required environment.
 - Requires additional dependencies to be Compiled
 - Easy to install with Docker
@@ -128,10 +128,10 @@ Psycopg2
 Installing Psycopg2:
 - C compiller
 - python3-dev
-- libpq-dev 
+- libpq-dev
 Equivalent packages for alpine3
 - postgresql-client
-- build-base 
+- build-base
 - postgresql-dev
 - musl-dev
 
@@ -156,3 +156,23 @@ DATABASES = {
 ----------- CREATE CORE APP -------------
 
 ----------- FIXING DB RACE CONDITION -----------
+
+---------- CREATE USER MODEL ----------
+
+Open settings.py and add to the bottom -> AUTH_USER_MODEL = 'core.User'
+
+docker-compose run --rm app sh -c 'python manage.py makemigrations'
+
+docker-compose run --rm app sh -c 'python manage.py wait_for_db && python manage.py migrate'
+see next step for possible fixes
+---------- FIX MIGRATION INCONSISTENCY ---------
+docker volume ls
+docker volume rm recipe-app-api_dev-db-data
+docker-compose down
+docker volume rm recipe-app-api_dev-db-data
+
+docker-compose run --rm app sh -c 'python manage.py wait_for_db && python manage.py migrate'
+
+---------- ADD SUPERUSER SUPPORT ------------
+
+docker-compose run --rm app sh -c 'python manage.py createsuperuser'
