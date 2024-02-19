@@ -14,6 +14,7 @@ class UserAdmin(BaseUserAdmin):
     list_display = ['email', 'name']
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
+        (_('Personal Info'), {'fields': ('name',)}),
         (
             _('Permissions'),
             {
@@ -43,4 +44,12 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
+# class RecipeAdmin():
+#     """Defining the admin page for Recipes."""
+#     rodering = ['id']
+#     list_display = ['id', 'title', 'time', 'price']
+
+
 admin.site.register(models.User, UserAdmin)
+admin.site.register(models.Recipe)
+admin.site.register(models.Tag)

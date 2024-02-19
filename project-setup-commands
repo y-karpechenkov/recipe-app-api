@@ -200,3 +200,11 @@ In new folder:
 - Create new folder 'tests' with file __init__.py
 
 core -> settings.py:  add to INSTALLED_APPS new line 'user',
+
+------------- CREATE RECIPE API -----------
+Create test
+Create model
+Add model to admin.py
+docker-compose run --rm app sh -c "python manage.py startapp makemigrations"
+docker-compose run --rm app sh -c "python manage.py startapp recipe"
+core -> settings.py:  add to INSTALLED_APPS new line 'recipe',
