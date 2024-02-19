@@ -25,6 +25,7 @@ def detail_url(recipe_id):
     """Create and return a recipe detail URL."""
     return reverse('recipe:recipe-detail', args=[recipe_id])
 
+
 def create_recipe(user, **params):
     """Create and return a sample Recipe."""
     defaults = {
@@ -56,6 +57,7 @@ class PublicRecipeAPITests(TestCase):
         """Test status is required to call API."""
         res = self.client.get(RECIPES_URL)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
 
 class PrivateRecipeAPITests(TestCase):
     """Test authenticated API requests."""
@@ -169,14 +171,17 @@ class PrivateRecipeAPITests(TestCase):
             description='Sample description',
         )
 
-        other_user = create_user(email='other@example.com', password='test1234')
+        other_user = create_user(
+            email='other@example.com',
+            password='test1234',
+        )
 
         payload = {
             'user': other_user.id,
             'title': 'New Title'
         }
         url = detail_url(recipe.id)
-        res = self.client.patch(url, payload)
+        self.client.patch(url, payload)
 
         recipe.refresh_from_db()
 

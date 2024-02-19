@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 
 from core import models
 
+
 def create_user(email='user@example.com', password='password1234'):
     """Create and return user for test."""
     return get_user_model().objects.create_user(email=email, password=password)
