@@ -207,4 +207,14 @@ Create model
 Add model to admin.py
 docker-compose run --rm app sh -c "python manage.py startapp makemigrations"
 docker-compose run --rm app sh -c "python manage.py startapp recipe"
+remove recipe/migrations, recipe/admin, recipe/tests, recipe/models
+add folder recipe/tests
+add file recipe/tests/__init__.py
 core -> settings.py:  add to INSTALLED_APPS new line 'recipe',
+
+----------- TAGS - Implement PATCH, DELETE ------------
+views.py ->
+class TagViewSet(
+    mixins.DestroyModelMixin,
+    mixins.UpdateModelMixin,
+
