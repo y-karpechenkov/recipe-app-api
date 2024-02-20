@@ -20,6 +20,7 @@ def detail_url(ingredient_id):
     """Create and return an ingredient detail URL."""
     return reverse('recipe:ingredient-detail', args=[ingredient_id])
 
+
 def create_user(email='user@example.com', password='password1234'):
     """Create and return user."""
     return get_user_model().objects.create_user(email=email, password=password)
@@ -61,8 +62,14 @@ class PrivateIngredientsApiTest(TestCase):
     def test_ingredients_limited_to_user(self):
         """Test list of ingredients is limited to authenticated user."""
         other_user = create_user(email='other@example.com')
-        ingredient1 = Ingredient.objects.create(user=self.user, name='Ingredient user1')
-        ingredient2 = Ingredient.objects.create(user=other_user, name='Ingredient user2')
+        ingredient1 = Ingredient.objects.create(
+            user=self.user,
+            name='Ingredient user1'
+        )
+        ingredient2 = Ingredient.objects.create(
+            user=other_user,
+            name='Ingredient user2',
+        )
 
         res = self.client.get(INGREDIENTS_URL)
 
@@ -76,7 +83,9 @@ class PrivateIngredientsApiTest(TestCase):
 
     def test_update_ingredient(self):
         """Test update ingredient is successful."""
-        ingredient = Ingredient.objects.create(user=self.user, name='Ingredient 1')
+        ingredient = Ingredient.objects.create(
+            user=self.user,
+            name='Ingredient 1')
 
         payload = {'name': 'Updated name 1'}
 
@@ -90,7 +99,9 @@ class PrivateIngredientsApiTest(TestCase):
     def test_delete_ingredient(self):
         """Test Deleting an ingredient."""
         Ingredient.objects.create(user=self.user, name='Ingredient0')
-        ingredient = Ingredient.objects.create(user=self.user, name='Ingredient1')
+        ingredient = Ingredient.objects.create(
+            user=self.user,
+            name='Ingredient1')
 
         url = detail_url(ingredient.id)
         res = self.client.delete(url)
