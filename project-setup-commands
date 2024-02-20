@@ -218,3 +218,9 @@ class TagViewSet(
     mixins.DestroyModelMixin,
     mixins.UpdateModelMixin,
 
+
+------------ INGREDIENTS ----------
+Add to class Recipe(models.Model):
+    - ingredients = models.ManyToManyField('Ingredient')
+
+Add to admin.py -> admin.site.register(models.Ingredient)
