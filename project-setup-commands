@@ -224,3 +224,64 @@ Add to class Recipe(models.Model):
     - ingredients = models.ManyToManyField('Ingredient')
 
 Add to admin.py -> admin.site.register(models.Ingredient)
+
+------------ IMAGES API ----------
+Pillow (Python Image Library)
+>>>>>
+Dockerfile -> add  "jpeg-dev" to line "apk add --update --no-cache postgresql-client"
+"""
+RUN python -m venv /py && \
+    /py/bin/pip install --upgrade pip && \
+    apk add --update --no-cache postgresql-client jpeg-dev && \
+"""
+
+Dockerfile -> add "zlib zlib-dev" to line "apk add --update --no-cache --virtual .tmp-build-deps \
+        build-base postgresql-dev musl-dev zlib zlib-dev"
+
+>>>>>>
+requirements.txt -> add Pillow>=8.2.0,<8.3.0
+docker-compose build
+>>>>>>
+Dockerfile -> add after user
+mkdir -p /vol/web/media && \
+    mkdir -p /vol/web/static && \
+    chown -R django-user:django-user /vol && \
+    chmod -R 755 /vol
+
+docker-compose build
+
+
+>>>>>
+in docker-compose.yml
+-> add volume to end ->  dev-static-data:
+-> app:volumes -> add - dev-static-data:/vol/web
+
+>>>>>
+add to settings.py ->  # Static files (CSS, JavaScript, Images) ->
+STATIC_URL = '/static/static/'
+MEDIA_URL = '/static/media/'
+
+MEDIA_ROOT = '/vol/web/media'
+STATIC_ROOT = '/vol/web/static'
+
+
+>>>>>
+add to urls.py ->
+from django.conf.urls.static import static
+from django.conf import settings
+
+AND
+
+if setting.DEBUG:
+    urlPatters += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT,
+    )
+
+
+>>>>
+To enable upload images through SWAGGER
+add to settings.py  ->
+SPECTACULAR_SETTINGS = {
+    'COMPONENT_SPLIT_REQUEST': True,
+}
