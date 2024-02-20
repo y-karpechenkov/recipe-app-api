@@ -20,6 +20,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     """Serializer for Recipes."""
 
     tags = TagSerializer(many=True, required=False)
+
     class Meta:
         model = Recipe
         fields = ['id', 'title', 'time_minutes', 'price', 'link', 'tags']
