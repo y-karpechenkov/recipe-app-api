@@ -285,3 +285,56 @@ add to settings.py  ->
 SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
 }
+
+
+
+----------- DEPLOYMENT -------------
+Add to Dockerfile ->
+COPY ./scripts /scripts
+
+>
+for UWSGI installation
+add after "apk add --update --no-cache --virtual .tmp-build-deps \
+        build-base postgresql-dev musl-dev zlib zlib-dev" ->
+linux-headers
+
+>
+chmod -R +x /scripts
+CMD ["run.sh"]
+
+>
+change to:
+ENV PATH="/scripts:/py/bin:$PATH"
+>>>>>>>>
+add scripts/run.sh
+
+>>>>>>>>
+requirements add:
+uwsgi>=2.0.19<2.1
+
+>>>>>>>
+add proxy/default.conf.tpl
+add proxy/run.sh
+add proxy/Dockerfile
+
+>>>>>>>>
+
+add docker-compose-deploy.yml
+
+>>>>>>>
+add .env.sample
+
+>>>>>>>
+in sttings.py ->
+SECRET_KEY = os.environ.get('SECRET_KEY', 'changeme')
+DEBUG = bool(int(os.environ.get('DEBUG', 0)))
+ALLOWED_HOSTS.extend(
+    filter(
+        None,
+        os.environ.get('ALLOWED_HOSTS', '').split(','),
+    )
+)
+
+>>>>>>
+add to docker-compose.yml -> app:environment:
+- DEBUG=1
