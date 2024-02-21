@@ -338,3 +338,52 @@ ALLOWED_HOSTS.extend(
 >>>>>>
 add to docker-compose.yml -> app:environment:
 - DEBUG=1
+
+
+
+>>>>>>
+
+
+-------- AWS EC2 Server setup ---------
+connect to ec2 via ssh
+ssh ec2-user@34.228.69.23
+Add ssh to git
+ssh-keygen -t ed25519 -b 4096
+leave name and pass empty
+
+cat ~/.ssh/id_ed25519.pub
+
+sudo yum install git -y
+
+sudo amazon-linux-extras install docker -y
+
+sudo systemctl enable docker.service
+sudo systemctl start docker.service
+sudo usermod -aG docker ec2-user
+exit
+ssh ec2-user@34.228.69.23
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+git clone
+
+cp .env.sample .env
+vi .env
+
+to allowed hosts add -> Find in ec2 -> instance -> networking -> public DNS
+
+>>>>
+Find in ec2 -> instance -> networking -> public DNS
+ec2-34-228-69-23.compute-1.amazonaws.com/admin
+
+>>>>
+docker-compose -f docker-compose-deploy.yml up -d
+
+Create superuser
+docker-compose -f docker-compose-deploy.yml run --rm app sh -c "pthon manage.py createsuperuser"
+admin@gmail.com
+Pwd1234
+
+FETCH THE LOGS
+docker-compose -f docker-compose-deploy.yml log
+
