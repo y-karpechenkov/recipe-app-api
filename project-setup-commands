@@ -387,3 +387,8 @@ Pwd1234
 FETCH THE LOGS
 docker-compose -f docker-compose-deploy.yml log
 
+
+------- AFTER CHANGES IN GIT --------
+git pull origin
+docker-compose -f docker-compose-deploy.yml build app
+
